@@ -5,48 +5,40 @@ const mongoose = require("mongoose");
 // This is inefficent for validation in terms of if anything has been changed
 //    because everything about the character is being overwritten and
 //    additonally, we have to check if at least one of those things is changed
-exports.updateCharacter = (req, res) => {
+exports.updateCharacter = async (req, res) => {
   if (!req.body.newCharacter || !req.body.newCharacter._id) {
     res.status(400).send({ message: "Body can not be empty!" });
     return;
   }
   const newCharacter = req.body.newCharacter;
   const characterID = newCharacter._id;
-  Character.findOne({ _id: characterID }, function (err, foundCharacter) {
-    if (err) {
-      console.log(err);
+  
+  try {
+    let foundCharacter = await Character.findOne({ _id: characterID });
+    if (!foundCharacter) {
+      console.log("Character Not Found!");
     } else {
-      if (!foundCharacter) {
-        console.log("Character Not Found!");
-      } else {
-        let hasAnythingChanged = false;
-        Object.keys(newCharacter).forEach((key) => {
-          if (hasAnythingChanged === false) {
-            if (foundCharacter[key] !== newCharacter[key]) {
-              hasAnythingChanged = true;
-            }
+      let hasAnythingChanged = false;
+      Object.keys(newCharacter).forEach((key) => {
+        if (hasAnythingChanged === false) {
+          if (foundCharacter[key] !== newCharacter[key]) {
+            hasAnythingChanged = true;
           }
-          foundCharacter[key] = newCharacter[key];
-        });
-        if (hasAnythingChanged === true) {
-          foundCharacter
-            .save(foundCharacter)
-            .then((data) => {
-              res.send(data);
-            })
-            .catch((err) => {
-              res.status(500).send({
-                message:
-                  err.message || "Some error occurred while updating resource",
-              });
-            });
         }
+        foundCharacter[key] = newCharacter[key];
+      });
+      if (hasAnythingChanged === true) {
+        foundCharacter.save();
       }
     }
-  });
+  } catch (error) {
+    res.status(500).send({
+      message: error.message || "Some error occurred while updating resource",
+    });
+  }
 };
 
-exports.createResource = (req, res) => {
+exports.createResource = async (req, res) => {
   if (!req.body || !req.body.characterID || !req.body.newResource.resourceID) {
     res.status(400).send({ message: "Body can not be empty!" });
     return;
@@ -79,7 +71,7 @@ exports.createResource = (req, res) => {
   });
 };
 
-exports.updateResource = (req, res) => {
+exports.updateResource = async (req, res) => {
   if (!req.body || !req.body.characterID || !req.body.resourceID) {
     res.status(400).send({ message: "Body can not be empty!" });
     return;
@@ -117,7 +109,7 @@ exports.updateResource = (req, res) => {
   });
 };
 
-exports.getManyCharacters = (req, res) => {
+exports.getManyCharacters = async (req, res) => {
   // Validate request
   req.body.characterIDs.forEach((characterID, index) => {
     if (!mongoose.isValidObjectId(characterID)) {
@@ -143,7 +135,7 @@ exports.getManyCharacters = (req, res) => {
   );
 };
 
-exports.getOneCharacter = (req, res) => {
+exports.getOneCharacter = async (req, res) => {
   // Validate request
   if (!mongoose.isValidObjectId(req.body.characterID)) {
     console.log("Invalid Character Mongoose ID");
@@ -168,7 +160,7 @@ exports.getOneCharacter = (req, res) => {
   );
 };
 
-exports.createCharacter = (req, res) => {
+exports.createCharacter = async (req, res) => {
   // Validate request
   if (!req.body.newCharacter || !req.body.newCharacter._id) {
     res.status(400).send({ message: "Content can not be empty!" });
@@ -190,7 +182,7 @@ exports.createCharacter = (req, res) => {
     });
 };
 
-exports.updateInfo = (req, res) => {
+exports.updateInfo = async (req, res) => {
   if (!req.body || !req.body.characterID) {
     res.status(400).send({ message: "Content can not be empty!" });
     return;
@@ -227,7 +219,7 @@ exports.updateInfo = (req, res) => {
   });
 };
 
-exports.updateHP = (req, res) => {
+exports.updateHP = async (req, res) => {
   // Validate request
   console.log(req.body);
   if (!req.body.characterID || typeof req.body.newHP !== "number") {

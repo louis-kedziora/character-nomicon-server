@@ -2,7 +2,7 @@ const db = require("../models");
 const User = db.users.getUserModel();
 const mongoose = require("mongoose");
 
-exports.updateUser = (req, res) => {
+exports.updateUser = async (req, res) => {
   // Validate request
   // Should look like:
   // updateUser([updateField], [updateValue], userID);
@@ -20,43 +20,34 @@ exports.updateUser = (req, res) => {
   const updateField = Object.keys(updateData)[0];
   const updateValue = Object.values(updateData)[0];
 
-  User.findOne({ _id: userID }, function (err, foundUser) {
-    if (err) {
-      console.log(err);
+  try {
+    let foundUser = await User.findOne({ _id: userID });
+    if(!foundUser) {
+      console.log("Character Not Found!");
     } else {
-      if (!foundUser) {
-        console.log("Character Not Found!");
-      } else {
-        if (foundUser[updateField] !== updateValue) {
-          foundUser[updateField] = updateValue;
-          foundUser
-            .save(foundUser)
-            .then((data) => {
-              res.send(data);
-            })
-            .catch((err) => {
-              res.status(500).send({
-                message:
-                  err.message || "Some error occurred while updating resource",
-              });
-            });
-        }
+      if (foundUser[updateField] !== updateValue) {
+        foundUser[updateField] = updateValue;
+        await foundUser.save();
       }
     }
-  });
+  } catch (error) {
+    res.status(500).send({
+      message: error.message || "Some error occurred while updating the user",
+    });
+    console.log(error);
+  }
 };
 
-exports.getAllUsers = (req, res) => {
-  User.find({}, function (err, foundUsers) {
-    if (err) {
-      console.log(err);
-    } else {
-      res.send(foundUsers);
-    }
-  });
+exports.getAllUsers = async (req, res) => {
+  try {
+    const foundUsers = await User.find({});
+    res.send(foundUsers);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-exports.getUser = (req, res) => {
+exports.getUser = async (req, res) => {
   // Validate request
   if (!mongoose.isValidObjectId(req.body.userID)) {
     console.log("Invalid User Mongoose ID");
@@ -64,16 +55,15 @@ exports.getUser = (req, res) => {
     return;
   }
 
-  User.findById(req.body.userID, function (err, foundUser) {
-    if (err) {
-      console.log(err);
-    } else {
-      res.send(foundUser);
-    }
-  });
+  try {
+    const foundUser = await User.findById(req.body.userID);
+    res.send(foundUser);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-exports.createUser = (req, res) => {
+exports.createUser = async (req, res) => {
   const newUser = req.body.newUser;
   // Validate request
   if (!newUser.email) {
@@ -83,14 +73,11 @@ exports.createUser = (req, res) => {
 
   const user = new User(newUser);
   // Save Character in the database
-  user
-    .save(user)
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while creating the User",
-      });
+  try {
+    await user.save();
+  } catch (error) {
+    res.status(500).send({
+      message: error.message || "Some error occurred while creating the User",
     });
+  }
 };
