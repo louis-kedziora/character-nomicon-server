@@ -12,26 +12,35 @@ exports.updateCharacter = async (req, res) => {
   }
   const newCharacter = req.body.newCharacter;
   const characterID = newCharacter._id;
-  
+
   try {
     let foundCharacter = await Character.findOne({ _id: characterID });
     if (!foundCharacter) {
       console.log("Character Not Found!");
     } else {
       let hasAnythingChanged = false;
+      // console.log("Database Character:");
+      // console.log(foundCharacter);
+
       Object.keys(newCharacter).forEach((key) => {
-        if (hasAnythingChanged === false) {
-          if (foundCharacter[key] !== newCharacter[key]) {
-            hasAnythingChanged = true;
+        if (key !== "_id") {
+          if (hasAnythingChanged === false) {
+            if (foundCharacter[key] !== newCharacter[key]) {
+              hasAnythingChanged = true;
+            }
           }
+          foundCharacter[key] = newCharacter[key];
         }
-        foundCharacter[key] = newCharacter[key];
       });
+
       if (hasAnythingChanged === true) {
-        foundCharacter.save();
+        // console.log("*********************************************************");
+        // console.log("Updated Character:");
+        await foundCharacter.save();
       }
     }
   } catch (error) {
+    console.log(error.message);
     res.status(500).send({
       message: error.message || "Some error occurred while updating resource",
     });
@@ -47,28 +56,19 @@ exports.createResource = async (req, res) => {
   const characterID = req.body.characterID;
   const newResource = req.body.newResource;
 
-  Character.findOne({ _id: characterID }, function (err, foundCharacter) {
-    if (err) {
-      console.log(err);
+  try {
+    let foundCharacter = await Character.findOne({ _id: characterID });
+    if (!foundCharacter) {
+      console.log("Character Not Found!");
     } else {
-      if (!foundCharacter) {
-        console.log("Character Not Found!");
-      } else {
-        foundCharacter.customResources.push(newResource);
-        foundCharacter
-          .save(foundCharacter)
-          .then((data) => {
-            res.send(data);
-          })
-          .catch((err) => {
-            res.status(500).send({
-              message:
-                err.message || "Some error occurred while updating resource",
-            });
-          });
-      }
+      foundCharacter.customResources.push(newResource);
+      await foundCharacter.save();
     }
-  });
+  } catch (error) {
+    res.status(500).send({
+      message: error.message || "Some error occurred while updating resource",
+    });
+  }
 };
 
 exports.updateResource = async (req, res) => {
@@ -79,34 +79,26 @@ exports.updateResource = async (req, res) => {
   const characterID = req.body.characterID;
   const resourceID = req.body.resourceID;
   const newValue = req.body.newValue;
-  Character.findOne({ _id: characterID }, function (err, foundCharacter) {
-    if (err) {
-      console.log(err);
+
+  try {
+    let foundCharacter = await Character.findOne({ _id: characterID });
+    if (!foundCharacter) {
+      console.log("Character Not Found!");
     } else {
-      if (!foundCharacter) {
-        console.log("Character Not Found!");
-      } else {
-        let customResources = foundCharacter.customResources;
-        let foundResource = customResources.find(
-          (item) => item.resourceID === resourceID
-        );
-        if (foundResource.currentResourceValue !== newValue) {
-          foundResource.currentResourceValue = newValue;
-          foundCharacter
-            .save(foundCharacter)
-            .then((data) => {
-              res.send(data);
-            })
-            .catch((err) => {
-              res.status(500).send({
-                message:
-                  err.message || "Some error occurred while updating resource",
-              });
-            });
-        }
+      let customResources = foundCharacter.customResources;
+      let foundResource = customResources.find(
+        (item) => item.resourceID === resourceID
+      );
+      if (foundResource.currentResourceValue !== newValue) {
+        foundResource.currentResourceValue = newValue;
+        await foundCharacter.save();
       }
     }
-  });
+  } catch (error) {
+    res.status(500).send({
+      message: error.message || "Some error occurred while updating resource",
+    });
+  }
 };
 
 exports.getManyCharacters = async (req, res) => {
@@ -119,20 +111,16 @@ exports.getManyCharacters = async (req, res) => {
     }
   });
 
-  Character.find(
-    { _id: { $in: req.body.characterIDs } },
-    function (err, foundCharacters) {
-      if (err) {
-        console.log(err);
-      } else {
-        if (!foundCharacters) {
-          console.log("Characters Not Found!");
-        } else {
-          res.send(foundCharacters);
-        }
-      }
-    }
-  );
+  try {
+    const foundCharacters = await Character.find({
+      _id: { $in: req.body.characterIDs },
+    });
+    res.send(foundCharacters);
+  } catch (error) {
+    res.status(500).send({
+      message: error.message || "Some error occurred while fetching characters",
+    });
+  }
 };
 
 exports.getOneCharacter = async (req, res) => {
@@ -143,21 +131,20 @@ exports.getOneCharacter = async (req, res) => {
     return;
   }
 
-  Character.findOne(
-    { _id: req.body.characterID },
-    function (err, foundCharacter) {
-      if (err) {
-        console.log(err);
-      } else {
-        if (!foundCharacter) {
-          console.log("Character Not Found!");
-        } else {
-          console.log("character founds");
-          res.send(foundCharacter);
-        }
-      }
+  try {
+    const foundCharacter = await Character.findOne({
+      _id: req.body.characterID,
+    });
+    if (!foundCharacter) {
+      console.log("Character Not Found!");
+    } else {
+      res.send(foundCharacter);
     }
-  );
+  } catch (error) {
+    res.status(500).send({
+      message: error.message || "Some error occurred while fetching character",
+    });
+  }
 };
 
 exports.createCharacter = async (req, res) => {
@@ -169,17 +156,15 @@ exports.createCharacter = async (req, res) => {
 
   const character = new Character(req.body.newCharacter);
   // Save Character in the database
-  character
-    .save(character)
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred while creating the Character",
-      });
+
+  try {
+    await character.save();
+  } catch (error) {
+    res.status(500).send({
+      message:
+        error.message || "Some error occurred while creating the Character",
     });
+  }
 };
 
 exports.updateInfo = async (req, res) => {
@@ -193,30 +178,21 @@ exports.updateInfo = async (req, res) => {
   const updateField = Object.keys(updateData)[0];
   const updateValue = Object.values(updateData)[0];
 
-  Character.findOne({ _id: characterID }, function (err, foundCharacter) {
-    if (err) {
-      console.log(err);
+  try {
+    let foundCharacter = await Character.findOne({ _id: characterID });
+    if (!foundCharacter) {
+      console.log("Character Not Found!");
     } else {
-      if (!foundCharacter) {
-        console.log("Character Not Found!");
-      } else {
-        if (foundCharacter[updateField] !== updateValue) {
-          foundCharacter[updateField] = updateValue;
-          foundCharacter
-            .save(foundCharacter)
-            .then((data) => {
-              res.send(data);
-            })
-            .catch((err) => {
-              res.status(500).send({
-                message:
-                  err.message || "Some error occurred while updating resource",
-              });
-            });
-        }
+      if (foundCharacter[updateField] !== updateValue) {
+        foundCharacter[updateField] = updateValue;
+        await foundCharacter.save();
       }
     }
-  });
+  } catch (error) {
+    res.status(500).send({
+      message: error.message || "Some error occurred while updating resource",
+    });
+  }
 };
 
 exports.updateHP = async (req, res) => {
@@ -228,29 +204,20 @@ exports.updateHP = async (req, res) => {
   }
 
   const { characterID, newHP } = req.body;
-  Character.findOne({ _id: characterID }, function (err, foundCharacter) {
-    if (err) {
-      console.log(err);
+  try {
+    let foundCharacter = await Character.findOne({ _id: characterID });
+    if (!foundCharacter) {
+      console.log("Character Not Found!");
     } else {
-      if (!foundCharacter) {
-        console.log("Character Not Found!");
-      } else {
-        if (foundCharacter.currentHP !== newHP) {
-          foundCharacter.currentHP = newHP;
-          foundCharacter
-            .save(foundCharacter)
-            .then((data) => {
-              res.send(data);
-            })
-            .catch((err) => {
-              res.status(500).send({
-                message:
-                  err.message ||
-                  "Some error occurred while updating character HP",
-              });
-            });
-        }
+      if (foundCharacter.currentHP !== newHP) {
+        foundCharacter.currentHP = newHP;
+        await foundCharacter.save();
       }
     }
-  });
+  } catch (error) {
+    res.status(500).send({
+      message:
+        error.message || "Some error occurred while updating character HP",
+    });
+  }
 };
