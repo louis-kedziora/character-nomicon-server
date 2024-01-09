@@ -2,8 +2,9 @@
 //Mongo Online DB
 const mongoPassword = process.env.MONGOPASS;
 module.exports = {
-  url: "mongodb+srv://louis-kedziora:"+ mongoPassword +"@cluster0.zladf5u.mongodb.net/playersheetDB",
+  url: "mongodb+srv://louis-kedziora:"+ mongoPassword +"@cluster0.zladf5u.mongodb.net/playersheetDB?retryWrites=true&w=majority",
 };
+
 
 //Local DB
 // module.exports = {
