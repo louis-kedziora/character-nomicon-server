@@ -8,12 +8,11 @@ const cors = require("cors");
 
 // Inter-project Imports
 const db = require("./src/models");
-
 // App Setup
 const app = express();
 app.use(cors({
   // origin: 'https://characternomicon.com'
-  origin: ["https://characternomicon.com","http://localhost:3000"]
+  origin: ["https://characternomicon.com","http://localhost:3000", "https://player-sheet-server.herokuapp.com"]
 }));
 app.set("view engine", "ejs");
 app.use(bodyParser.json());
