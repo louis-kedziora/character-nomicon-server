@@ -1,4 +1,3 @@
-// 3rd Party Imports
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
@@ -11,8 +10,7 @@ const db = require("./src/models");
 // App Setup
 const app = express();
 app.use(cors({
-  // origin: 'https://characternomicon.com'
-  origin: ["https://characternomicon.com","http://localhost:3000", "https://player-sheet-server.herokuapp.com"]
+  origin: "https://characternomicon.com"
 }));
 app.set("view engine", "ejs");
 app.use(bodyParser.json());
