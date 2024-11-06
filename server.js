@@ -10,7 +10,8 @@ const db = require("./src/models");
 // App Setup
 const app = express();
 app.use(cors({
-  origin: "https://characternomicon.com"
+  origin: "https://characternomicon.com",
+  methods: ['GET', 'PUT', 'POST', 'PATCH', 'DELETE']
 }));
 app.set("view engine", "ejs");
 app.use(bodyParser.json());
