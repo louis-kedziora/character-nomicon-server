@@ -14,7 +14,7 @@ module.exports = (app) => {
   router.post("/get", users.getUser);
   router.post("/getAll", users.getAllUsers);
 
-  router.patch("/updateUser", users.updateUser);
+  router.post("/updateUser", users.updateUser);
 
   app.use("/api/users", router);
 };

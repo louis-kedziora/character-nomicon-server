@@ -17,11 +17,11 @@ module.exports = (app) => {
   router.post("/getmany", characters.getManyCharacters);
 
 
-  router.patch("/updatehp", characters.updateHP);
-  router.patch("/updateinfo", characters.updateInfo);
-  router.patch("/createresource", characters.createResource);
-  router.patch("/updateresource", characters.updateResource);
-  router.patch("/updatecharacter", characters.updateCharacter);
+  router.post("/updatehp", characters.updateHP);
+  router.post("/updateinfo", characters.updateInfo);
+  router.post("/createresource", characters.createResource);
+  router.post("/updateresource", characters.updateResource);
+  router.post("/updatecharacter", characters.updateCharacter);
 
 
 
