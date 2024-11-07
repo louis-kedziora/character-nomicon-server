@@ -28,6 +28,7 @@ exports.updateUser = async (req, res) => {
       if (foundUser[updateField] !== updateValue) {
         foundUser[updateField] = updateValue;
         await foundUser.save();
+        res.status(200).send({ message: "User updated successfully!" });
       }
     }
   } catch (error) {
@@ -75,6 +76,7 @@ exports.createUser = async (req, res) => {
   // Save Character in the database
   try {
     await user.save();
+    res.status(200).send({ message: "User created successfully!" });
   } catch (error) {
     res.status(500).send({
       message: error.message || "Some error occurred while creating the User",

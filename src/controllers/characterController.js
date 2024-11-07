@@ -37,6 +37,7 @@ exports.updateCharacter = async (req, res) => {
         // console.log("*********************************************************");
         // console.log("Updated Character:");
         await foundCharacter.save();
+        res.status(200).send({ message: "Character has been updated." });
       }
     }
   } catch (error) {
@@ -63,6 +64,7 @@ exports.createResource = async (req, res) => {
     } else {
       foundCharacter.customResources.push(newResource);
       await foundCharacter.save();
+      res.status(200).send({ message: "Resource successfully Created" });
     }
   } catch (error) {
     res.status(500).send({
@@ -73,7 +75,7 @@ exports.createResource = async (req, res) => {
 
 exports.updateResource = async (req, res) => {
   if (!req.body || !req.body.characterID || !req.body.resourceID) {
-    res.status(400).send({ message: "Body can not be empty!" });
+    res.status(400).send({ message: "Body cannot be empty!" });
     return;
   }
   const characterID = req.body.characterID;
@@ -84,6 +86,7 @@ exports.updateResource = async (req, res) => {
     let foundCharacter = await Character.findOne({ _id: characterID });
     if (!foundCharacter) {
       console.log("Character Not Found!");
+      res.status(404).send({ message: "Character not found!" });
     } else {
       let customResources = foundCharacter.customResources;
       let foundResource = customResources.find(
@@ -92,6 +95,9 @@ exports.updateResource = async (req, res) => {
       if (foundResource.currentResourceValue !== newValue) {
         foundResource.currentResourceValue = newValue;
         await foundCharacter.save();
+        res.status(200).send({ message: "Resource updated successfully!" });
+      } else {
+        res.status(200).send({ message: "No changes made to resource!" });
       }
     }
   } catch (error) {
@@ -100,6 +106,7 @@ exports.updateResource = async (req, res) => {
     });
   }
 };
+
 
 exports.getManyCharacters = async (req, res) => {
   // Validate request
@@ -186,6 +193,7 @@ exports.updateInfo = async (req, res) => {
       if (foundCharacter[updateField] !== updateValue) {
         foundCharacter[updateField] = updateValue;
         await foundCharacter.save();
+        res.status(200).send({ message: "Info updated successfully!" });
       }
     }
   } catch (error) {
@@ -212,6 +220,7 @@ exports.updateHP = async (req, res) => {
       if (foundCharacter.currentHP !== newHP) {
         foundCharacter.currentHP = newHP;
         await foundCharacter.save();
+        res.status(200).send({ message: "HP updated successfully!" });
       }
     }
   } catch (error) {
